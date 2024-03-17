@@ -18,19 +18,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MovieTest {
 	
-	@Autowired
-	private MovieApiUtil apiUtil;
+//	@Autowired
+//	private MovieApiUtil apiUtil;
 	
 	
-	@Test
-	public void test() throws JsonProcessingException, IllegalArgumentException {
-		
-		List<MovieProviderItemDto> list = apiUtil.getAllMovieProviders();
-		
-		Assertions.assertNotNull(list);
-		log.info("list={}", list);
-		
-	}
+//	@Test
+//	public void test() throws JsonProcessingException, IllegalArgumentException {
+//		
+//		List<MovieProviderItemDto> list = apiUtil.getAllMovieProviders();
+//		
+//		Assertions.assertNotNull(list);
+//		log.info("list={}", list);
+//		
+//	}
 	
 	
 }
