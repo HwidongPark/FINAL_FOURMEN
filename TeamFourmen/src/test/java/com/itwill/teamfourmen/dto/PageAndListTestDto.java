@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class PageAndListTestDto {
 	
-	private int page;
-	private List<PopularPersonTestDto> results;
+//	private int page;
+//	private List<PopularPersonTestDto> results;
 	
 }

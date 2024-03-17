@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 @SpringBootTest
 public class PostTest {
 	
-	@Autowired PostRepository postDao;
-	@Autowired BoardService boardService;
+//	@Autowired PostRepository postDao;
+//	@Autowired BoardService boardService;
 	
 	@Test
 	public void test() {

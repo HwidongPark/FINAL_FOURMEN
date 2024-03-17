@@ -31,10 +31,10 @@ class TeamFourmenApplicationTests {
 //	PersonController personController;
 //	ReviewController reviewController;
 	
-	@Autowired
-	ReviewDao reviewDao;
+//	@Autowired
+//	ReviewDao reviewDao;
 	
-	@Test
+//	@Test
 	void loadReviewComment() {
 				 
 //		Review targetReview = reviewDao.findByReviewId(6L);
