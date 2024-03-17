@@ -43,7 +43,7 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/tv")
 public class TvShowController {
 
-	@Value("${api.themoviedb.api-key}")
+	@Value("${tmdb.api-key}")
 	private String API_KEY;
 
 	private final TvShowApiUtil apiUtil;

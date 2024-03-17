@@ -241,8 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						postId: postId
 					},
 					content: textareaAddReply.value,
-					replyTo: replyTo,
-					authorNicknameReplyingTo: authorNicknameReplyingTo		
+					replyTo: replyTo,						
 				}
 				
 				axios.post('/board/comment/add', data)
@@ -484,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	                        
 	                        if(replyComment.isDeleted == null) {   // 삭제된 댓글이면 답변받는 사람 닉네임 가리기
                                 htmlContent += `                                
-				                            <span class="span-post-comment-replied-author" replyTo="${replyComment.replyTo}">${replyComment.authorNicknameReplyingTo}</span>
+				                            <span class="span-post-comment-replied-author" replyTo="${replyComment.replyTo}">${replyComment.commentReplied.member.nickname}</span>
                                 `;
                             }
                             

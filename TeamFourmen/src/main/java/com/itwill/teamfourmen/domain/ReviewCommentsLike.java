@@ -15,11 +15,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @DynamicInsert
 @Table(name = "review_comments_likes")
-@SequenceGenerator(name = "review_comment_like_seq", sequenceName =  "review_comment_like_seq", allocationSize = 1)
 public class ReviewCommentsLike {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "review_comment_like_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewCommentLikeId;
 
     @Basic(optional = false)

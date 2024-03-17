@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 public class ReviewLike {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "review_likes_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewLikeId;
 
     @Basic(optional = false)

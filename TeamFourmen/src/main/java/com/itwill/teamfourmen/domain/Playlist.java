@@ -28,11 +28,10 @@ import lombok.NoArgsConstructor;
 @DynamicInsert
 @Table(name = "playlist")
 @NoArgsConstructor
-@SequenceGenerator(name = "playlist_seq", sequenceName = "playlist_seq", allocationSize = 1)
 @AllArgsConstructor
 public class Playlist {
 	
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "playlist_seq")	
+	@GeneratedValue(strategy = GenerationType.IDENTITY)	
 	@Id
 	private Long playlistId;
 	

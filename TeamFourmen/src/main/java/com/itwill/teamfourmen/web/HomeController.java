@@ -87,7 +87,7 @@ import org.springframework.ui.Model;
 @Controller
 @RequiredArgsConstructor
 public class HomeController {
-	@Value("${api.themoviedb.api-key}")
+	@Value("${tmdb.api-key}")
 	private String API_KEY;
 	private final HomeService homeservice;
 	private final EmailProvider emailprovider;

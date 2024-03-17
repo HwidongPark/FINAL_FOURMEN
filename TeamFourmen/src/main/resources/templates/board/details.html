@@ -160,7 +160,7 @@
                     </div>
                     <div class="post-comment-body-container post-comment-reply-body-container">
                         <div class="post-comment-content">
-                            <span th:if="${replyComment.isDeleted == null}" class="span-post-comment-replied-author" th:replyTo="${replyComment.replyTo}" th:text="${replyComment.authorNicknameReplyingTo}"></span>
+                            <span th:if="${replyComment.isDeleted == null}" class="span-post-comment-replied-author" th:replyTo="${replyComment.replyTo}" th:text="${replyComment.commentReplied.member.nickname}"></span>
                             <span class="span-post-comment-content" th:text="${replyComment.content}"></span>
                         </div>
                         <div th:if="${replyComment.isDeleted == null}" class="post-comment-each-like-container">

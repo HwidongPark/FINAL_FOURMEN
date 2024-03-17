@@ -19,11 +19,10 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Table(name = "follows")
-@SequenceGenerator(name = "follows_id_seq", sequenceName = "follows_id_seq", allocationSize = 1)
 public class Follow {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "follows_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "follows_id")
     private Long followsId;
 

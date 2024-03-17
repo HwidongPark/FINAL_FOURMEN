@@ -20,11 +20,10 @@ import java.time.LocalDateTime;
 @DynamicInsert
 @EntityListeners(AuditingEntityListener.class)
 @Table(name= "review_comments")
-@SequenceGenerator(name = "review_comments_seq", sequenceName = "review_comments_seq" , allocationSize = 1)
 public class ReviewComments {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "review_comments_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
     @Basic(optional = false)

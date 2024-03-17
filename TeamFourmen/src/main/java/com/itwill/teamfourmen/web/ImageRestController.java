@@ -38,7 +38,7 @@ public class ImageRestController {
 	public ResponseEntity<ByteArrayResource> renderFromUrlImage(@RequestParam(name = "url") String url) throws IOException {
 		
 		log.info("renderFromUrlImage(url={})", url);
-		String decodedUrl = URLDecoder.decode(url);
+		String decodedUrl = URLDecoder.decode(url, "UTF-8");
 		log.info("decoded url={}", decodedUrl);
 		ByteArrayResource imageResource = imageService.renderFromUrlImage(decodedUrl);
 		

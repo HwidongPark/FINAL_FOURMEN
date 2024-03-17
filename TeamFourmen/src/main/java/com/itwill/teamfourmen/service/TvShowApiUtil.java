@@ -29,10 +29,10 @@ import java.util.stream.Collectors;
 @Service
 public class TvShowApiUtil {
 
-    @Value("${api.themoviedb.api-key}")
+    @Value("${tmdb.api-key}")
     private String API_KEY;
 
-    @Value("${api.themoviedb.api-token}")
+    @Value("${tmdb.hd.token}")
     private String TOKEN;
 
     private TvShowDTO tvShowDTO;

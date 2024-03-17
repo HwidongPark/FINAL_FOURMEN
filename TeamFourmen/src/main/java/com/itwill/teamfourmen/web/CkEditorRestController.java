@@ -36,18 +36,13 @@ public class CkEditorRestController {
 		// 서버의 폴더위치
 		String sDirectory = servletRequest.getServletContext().getRealPath("");
 		log.info("sDirectory={}", sDirectory);
-//		String sFileName = ckEditorService.imageUpload(request);
-//		log.info("sFileName={}", sFileName);
-//		log.info("컨택스트루트={}", contextRoot);
 
 		String s3Url = ckEditorService.imageUpload(request, sDirectory);
 
 		responseData.put("uploaded", true);
 		responseData.put("url", s3Url);
 		log.info("이미지 주소={}", s3Url);
-
-//		responseData.put("url", contextRoot + "/api/uploaded/file/" + sFileName);
-//		log.info("이미지 주소=" + contextRoot + "/api/uploaded/file/" + sFileName);
+		
 
 		return responseData;
 	}

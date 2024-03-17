@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class PersonService {
 
-	@Value("${tmdb.api.key}")
+	@Value("${tmdb.api-key}")
 	private String apiKey;
 	private static final String POPULAR = "popular";
     private static final String apiUrl = "https://api.themoviedb.org/3";

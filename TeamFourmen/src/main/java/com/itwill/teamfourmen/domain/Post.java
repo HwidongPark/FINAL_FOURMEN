@@ -37,11 +37,10 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "post")
 @DynamicInsert
-@SequenceGenerator(name = "post_id_seq", sequenceName = "post_id_seq", allocationSize = 1)
 public class Post {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "post_id_seq")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long postId;
 	
 	@ManyToOne

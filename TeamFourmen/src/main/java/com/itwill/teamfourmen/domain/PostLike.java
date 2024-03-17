@@ -14,11 +14,10 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Data
 @Table(name = "post_likes")
-@SequenceGenerator(name = "post_likes_id_seq", sequenceName = "post_likes_id_seq", allocationSize = 1)
 public class PostLike {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "post_likes_id_seq")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
 	@ManyToOne

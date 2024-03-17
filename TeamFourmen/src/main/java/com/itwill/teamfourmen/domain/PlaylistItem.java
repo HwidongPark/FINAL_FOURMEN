@@ -19,12 +19,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 @Entity
-@SequenceGenerator(name = "playlist_item_seq", sequenceName = "playlist_item_seq", allocationSize = 1)
 @Table(name = "playlist_item")
 public class PlaylistItem {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "playlist_item_seq")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long playlistItemId;
 	
 	@ManyToOne

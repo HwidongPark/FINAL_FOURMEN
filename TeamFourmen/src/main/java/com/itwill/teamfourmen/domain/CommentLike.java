@@ -13,11 +13,10 @@ import lombok.Data;
 @Data
 @Table(name = "comment_likes")
 @Entity
-@SequenceGenerator(name = "comment_likes_id_seq" , sequenceName = "comment_likes_id_seq", allocationSize = 1)
 public class CommentLike {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "comment_likes_id_seq")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long commentLikeId;
 	
 	@ManyToOne

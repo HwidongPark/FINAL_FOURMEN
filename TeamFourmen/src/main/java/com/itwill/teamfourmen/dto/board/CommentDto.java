@@ -47,7 +47,7 @@ public class CommentDto {
 	
 	private Long replyTo;
 	
-	private String authorNicknameReplyingTo;
+	private Comment commentReplied;
 	
 	private String isDeleted;
 	
@@ -55,6 +55,14 @@ public class CommentDto {
 	
 	private List<CommentDto> repliesList = new ArrayList<>();
 	
+	
+	/**
+	 * Comment타입의 객체를 CommentDto로 변환시키는 메서드
+	 * 단, commentDto의 replyTo필드의 타입은 Comment이며, Comment의 replyTo필드의 타입은 Long이기 때문에
+	 * 따로 매핑시켜줘야 함
+	 * @param comment
+	 * @return
+	 */
 	public static CommentDto fromEntity(Comment comment) {
 		
 		return CommentDto.builder()
@@ -65,7 +73,6 @@ public class CommentDto {
 					.createdTime(comment.getCreatedTime())
 					.likes(comment.getLikes())
 					.replyTo(comment.getReplyTo())
-					.authorNicknameReplyingTo(comment.getAuthorNicknameReplyingTo())
 					.isDeleted(comment.getIsDeleted())
 					.commentLikesList(new ArrayList<CommentLike>())
 					.repliesList(new ArrayList<CommentDto>())

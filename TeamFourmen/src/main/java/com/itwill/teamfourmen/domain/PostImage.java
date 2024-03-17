@@ -1,41 +1,38 @@
 package com.itwill.teamfourmen.domain;
 
-import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@Entity
+
 @Data
+@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "tmdb_likes")
-public class TmdbLike {
-	
-	
+@Table(name = "post_images")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class PostImage {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@Column(name = "post_images_id")
+	private Long postImagesID;
 	
-	@Basic(optional = false)
+	@EqualsAndHashCode.Include
+	private String postImage;
+	
 	@ManyToOne
-	@JoinColumn(name="email")
-	private Member member;
-	
-	@Basic(optional = false)
-	private String category;
-	
-	@Basic(optional = false)
-	private Integer tmdbId;
+	@JoinColumn(name = "post_id")
+	private Post post;
 	
 }

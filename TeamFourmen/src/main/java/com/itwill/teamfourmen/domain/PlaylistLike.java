@@ -20,11 +20,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "playlist_likes")
 @NoArgsConstructor
 @AllArgsConstructor
-@SequenceGenerator(name = "playlist_likes_seq", sequenceName = "playlist_likes_seq", allocationSize = 1)
 public class PlaylistLike {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "playlist_likes_seq")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long playlistLikeId;
 	
 	@ManyToOne

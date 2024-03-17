@@ -19,7 +19,7 @@ import java.util.*;
 @Service
 public class SearchService {
 
-    @Value("${tmdb.api.key}")
+    @Value("${tmdb.api-key}")
     private String apiKey;
     private static final String apiUrl = "https://api.themoviedb.org/3";
     private final WebClient webClient;

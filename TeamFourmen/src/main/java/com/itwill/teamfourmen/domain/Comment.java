@@ -36,12 +36,11 @@ import lombok.NoArgsConstructor;
 @DynamicInsert
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "comments")
-@SequenceGenerator(name = "comment_id_seq", sequenceName = "comment_id_seq", allocationSize = 1)
 @Entity
 public class Comment {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "comment_id_seq")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long commentId;
 	
 	@ManyToOne
@@ -64,8 +63,6 @@ public class Comment {
 	private Long likes;
 	
 	private Long replyTo;
-	
-	private String authorNicknameReplyingTo;
-	
+		
 	private String isDeleted;
 }

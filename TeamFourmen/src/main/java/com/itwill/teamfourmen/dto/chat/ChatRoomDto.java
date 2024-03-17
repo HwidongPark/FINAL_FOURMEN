@@ -21,7 +21,6 @@ public class ChatRoomDto {
 	private int roomId;		// movieId 또는 tvShowId
 	
 	private HashMap<Member, Integer> members;	// 해당 방의 유저 목록.. value는 유저가 채팅창 띄운 횟수
-	
-	private String type; // ROOM으로 넘겨주기
+	 
 	
 }

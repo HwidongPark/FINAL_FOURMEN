@@ -10,9 +10,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.text.html.HTMLDocument;
 
 import org.joda.time.DateTimeZone;
 import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +29,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.itwill.teamfourmen.config.S3Config;
 import com.itwill.teamfourmen.domain.Comment;
 import com.itwill.teamfourmen.domain.CommentLike;
 import com.itwill.teamfourmen.domain.Member;
 import com.itwill.teamfourmen.domain.MemberRepository;
 import com.itwill.teamfourmen.domain.Post;
+import com.itwill.teamfourmen.domain.PostImage;
 import com.itwill.teamfourmen.domain.PostLike;
 import com.itwill.teamfourmen.dto.board.CommentDto;
 import com.itwill.teamfourmen.dto.board.PostDto;
@@ -35,10 +44,12 @@ import com.itwill.teamfourmen.dto.person.PageAndListDto;
 import com.itwill.teamfourmen.dto.post.PostCreateDto;
 import com.itwill.teamfourmen.repository.CommentLikeRepository;
 import com.itwill.teamfourmen.repository.CommentRepository;
+import com.itwill.teamfourmen.repository.PostImageRepository;
 import com.itwill.teamfourmen.repository.PostLikeRepository;
 import com.itwill.teamfourmen.repository.PostRepository;
 import com.okta.spring.boot.oauth.env.OktaEnvironmentPostProcessorApplicationListener;
 
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,9 +60,15 @@ public class BoardService {
 	
 	private final PostRepository postDao;
 	private final PostLikeRepository postLikeDao;
+	private final PostImageRepository postImageDao;
 	private final CommentRepository commentDao;
 	private final CommentLikeRepository commentLikeDao;
 	private final MemberRepository memberDao;
+	
+	private final S3Config s3Config;
+	
+	@Value("${cloud.aws.s3.bucket}")
+	private String bucketName;
 	
 	private int postsPerPage = 20;
 	
@@ -64,9 +81,26 @@ public class BoardService {
 		
 		String textContent = Jsoup.parse(postDto.getContent()).text();
 		postDto.setTextContent(textContent);
+		
 		Post post = postDto.toEntity();
 		
 		Post savedPost = postDao.save(post);
+		
+		// 이미지만 빼네서 저장(S3에 저장된 이미지파일을 관리하기 위함)
+		List<String> imageUrlList = Jsoup.parse(postDto.getContent()).select("img").eachAttr("src");		
+		imageUrlList.forEach((imageUrl) -> {
+			
+			String regex = "https://teamfourmen-final\\.s3\\.ap-northeast-2\\.amazonaws\\.com/(images/.+)";
+	        Pattern pattern = Pattern.compile(regex);
+	        Matcher matcher = pattern.matcher(imageUrl);
+	        
+	        if (matcher.find()) {
+	            String extractedValue = matcher.group(1);
+	            PostImage postImage = PostImage.builder().postImage(extractedValue).post(savedPost).build();
+	            postImageDao.save(postImage);
+	        }
+			
+		});
 		
 		return savedPost;
 	}
@@ -77,6 +111,10 @@ public class BoardService {
 	 */
 	public void deletePost(Long postId) {
 		log.info("deletePost(postId={})", postId);
+		
+		List<PostImage> postImageList = postImageDao.findAllByPostPostId(postId);
+		
+		postImageList.forEach((postImage) -> s3Config.amazonS3Client().deleteObject(bucketName, postImage.getPostImage()));		
 		
 		postDao.deleteById(postId);
 	}
@@ -98,6 +136,39 @@ public class BoardService {
 		postToUpdate.setContent(post.getContent());
 		postToUpdate.setTextContent(textContent);
 		postToUpdate.setModifiedTime(LocalDateTime.now());
+		
+		// 이미지만 빼네서 저장(S3에 저장된 이미지파일을 관리하기 위함)
+		List<PostImage> postImagesList = postImageDao.findAllByPostPostId(postToUpdate.getPostId()); // 기존 이미지 리스트
+		
+		List<String> imageUrlList = Jsoup.parse(postToUpdate.getContent()).select("img").eachAttr("src");		
+		imageUrlList.forEach((imageUrl) -> {
+			
+			String regex = "https://teamfourmen-final\\.s3\\.ap-northeast-2\\.amazonaws\\.com/(images/.+)";
+	        Pattern pattern = Pattern.compile(regex);
+	        Matcher matcher = pattern.matcher(imageUrl);
+	        
+	        if (matcher.find()) {
+	            String extractedValue = matcher.group(1);
+	            
+	            boolean isInTheDatabase = false;
+	            
+	            // 리스트에 포함돼 있지 않다면 포함시키기
+	            for (PostImage eachPostImage : postImagesList) {
+	            	log.info("eachPostImage={}, extractedValue={}", eachPostImage, extractedValue);
+	            	if (eachPostImage.getPostImage().contains(extractedValue)) {
+	            		isInTheDatabase = true;
+	            	}
+	            }
+	            
+	            if(!isInTheDatabase) {
+	            	PostImage postImage = PostImage.builder().postImage(extractedValue).post(postToUpdate).build();
+	            	postImageDao.save(postImage);
+	            }
+
+	            
+	        }
+			
+		});
 		
 	}
 	
@@ -386,6 +457,15 @@ public class BoardService {
 			List<Comment> initialRepliesList = commentDao.findAllByReplyTo(comment.getCommentId());
 			List<CommentDto> initialRepliesDtoList = initialRepliesList.stream().map((replyComment) -> CommentDto.fromEntity(replyComment)).toList();
 			
+			initialRepliesDtoList.forEach((reply) -> {
+				Comment commentReplied = commentDao.findById(reply.getReplyTo()).orElse(null);
+				reply.setCommentReplied(commentReplied);
+				
+				List<CommentLike> replyCommentLikeList = commentLikeDao.findAllByCommentCommentId(reply.getCommentId());
+				reply.setCommentLikesList(replyCommentLikeList);
+				
+			});
+			
 			comment.getRepliesList().addAll(initialRepliesDtoList);
 			
 			for (CommentDto initialReplyCommentDto : initialRepliesDtoList) {
@@ -445,13 +525,6 @@ public class BoardService {
 	 * 댓글 삭제하는 메서드
 	 * @param commentId
 	 */
-//	@Transactional
-//	public void deleteComment(Long commentId) {
-//		log.info("deleteComment(commentId={})", commentId);
-//		
-//		commentDao.deleteById(commentId);
-//		
-//	}
 	@Transactional
 	public void deleteComment(Long commentId) {
 		log.info("deleteComment(commentId={})", commentId);
@@ -499,7 +572,14 @@ public class BoardService {
 		List<Comment> repliesList = commentDao.findAllByReplyTo(replyDto.getCommentId());
 		List<CommentDto> repliesDtoList = repliesList.stream().map((reply) -> CommentDto.fromEntity(reply)).toList();
 		
-		repliesDtoList.forEach((replyComment) -> replyComment.setTimeDifferenceInMinute(getMinuteDifferenceIfDateSame(replyComment.getCreatedTime())));
+		repliesDtoList.forEach((replyComment) -> {
+			List<CommentLike> commetLikesListForReply = commentLikeDao.findAllByCommentCommentId(replyComment.getCommentId());
+			replyComment.setCommentLikesList(commetLikesListForReply);
+			
+			Comment commentReplied = commentDao.findById(replyComment.getReplyTo()).orElse(null);
+			replyComment.setCommentReplied(commentReplied);
+			replyComment.setTimeDifferenceInMinute(getMinuteDifferenceIfDateSame(replyComment.getCreatedTime()));	
+		});
 		
 		commentDto.getRepliesList().addAll(repliesDtoList);
 		

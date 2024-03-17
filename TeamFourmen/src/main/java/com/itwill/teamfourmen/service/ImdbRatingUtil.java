@@ -18,10 +18,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ImdbRatingUtil {
 
-    @Value("${api.themoviedb.api-token}")
+    @Value("${tmdb.hd.token}")
     private String TMDB_TOKEN;
 
-    @Value("${api.themoviedb.api-key}")
+    @Value("${tmdb.api-key}")
     private String API_KEY;
 
     private final ImdbRatingsRepository imdbRatingsDao;

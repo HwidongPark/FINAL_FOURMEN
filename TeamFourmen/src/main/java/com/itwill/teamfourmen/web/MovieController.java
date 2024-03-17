@@ -414,6 +414,12 @@ public class MovieController {
 	public String movieBoardCreate(Model model) {
 		log.info("영화 게시글 작성페이지");
 		
+		// 일단 create페이지에 들어오면 db에 글 작성을 insert하고 나중에 update하도록 함
+		// 이미지 파일을 관리하기 위해서				
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String email = authentication.getName();
+		Member signedInUser = Member.builder().email(email).build();
+				
 		model.addAttribute("category", "movie");
 		
 		return "board/create";
