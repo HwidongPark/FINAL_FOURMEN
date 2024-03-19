@@ -1,6 +1,18 @@
 # FINAL_FOURMEN
-FINAL_FOURMEN_PROJECT
 <hr>
+
+<p>점점 많아지는 OTT 플랫폼, 어디서 내가 원하는 영화, TV프로그램을 시청하지?</p>
+<p style="color: blue; font-size: 1.1rem; font-weight: 700;">인기, 최신 영화/TV시리즈 및 배우, 감독을 한눈에 볼 수 있는 웹사이트</p>
+<ul>
+  <li>각 영화/TV프로그램이 어느 곳에서 시청 가능한지 알아보자</li>
+  <li>각 영화/TV프로그램에 대해 토론 가능한 오픈채팅</li>
+  <li>영화/TV/인물에 대해 자유롭게 토론할 수 있는 자유 게시판</li>
+</ul>
+
+<br>
+
+<hr>
+
 <h3>강동균, 김지호 권오중, 박휘동</h3>
 <hr>
 <h5>강동균</h5>
