@@ -2,7 +2,7 @@
 <hr>
 <h3>팀 구성: 강동균, 김지호 권오중, 박휘동</h3>
 <hr>
-url: <a href="http://www.fourmenmedia.link">http://www.fourmenmedia.link</a>
+url: <a href="http://www.fourmenmedia.link" target="_blank">http://www.fourmenmedia.link</a>
 <hr>
 
 <p>점점 많아지는 OTT 플랫폼, 어디서 내가 원하는 영화, TV프로그램을 시청하지?</p>
