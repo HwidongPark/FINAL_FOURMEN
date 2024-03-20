@@ -1,5 +1,9 @@
 # FINAL_FOURMEN
 <hr>
+<h3>팀 구성: 강동균, 김지호 권오중, 박휘동</h3>
+<hr>
+url: <a href="http://www.fourmenmedia.link">http://www.fourmenmedia.link</a>
+<hr>
 
 <p>점점 많아지는 OTT 플랫폼, 어디서 내가 원하는 영화, TV프로그램을 시청하지?</p>
 <p style="color: blue; font-size: 1.1rem; font-weight: 700;">인기, 최신 영화/TV시리즈 및 배우, 감독을 한눈에 볼 수 있는 웹사이트</p>
@@ -13,7 +17,6 @@
 
 <hr>
 
-<h3>팀 구성: 강동균, 김지호 권오중, 박휘동</h3>
 <hr>
 
 <h3>내 역할</h3>
