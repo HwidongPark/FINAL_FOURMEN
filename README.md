@@ -17,7 +17,6 @@ url: <a href="http://www.fourmenmedia.link" target="_blank">http://www.fourmenme
 
 <hr>
 
-<hr>
 
 <h3>내 역할</h3>
 <ul>
