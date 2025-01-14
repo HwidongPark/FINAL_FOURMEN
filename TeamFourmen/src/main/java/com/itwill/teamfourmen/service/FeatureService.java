@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.itwill.teamfourmen.domain.*;
 import com.itwill.teamfourmen.dto.comment.ReviewLikeDTO;
 import com.itwill.teamfourmen.dto.movie.MovieDetailsDto;
@@ -281,7 +283,15 @@ public class FeatureService {
 		
 		playlistDtoList.forEach((dto) -> {
 			// getItemsInPlaylist 메서드 사용해서 해당 플레이리스트에 있는 아이템들을 매핑
-			dto.setPlaylistItemDtoList(getItemsInPlaylist(dto.getPlaylistId()));
+			try {
+				dto.setPlaylistItemDtoList(getItemsInPlaylist(dto.getPlaylistId()));
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			List<PlaylistLike> playlistLikeList = playlistLikeDao.findAllByPlaylistPlaylistId(dto.getPlaylistId());
 			dto.setPlaylistLikeList(playlistLikeList);
 		});
@@ -303,7 +313,15 @@ public class FeatureService {
 		List<PlaylistDto> playlistDtoList = playlist.stream().map((eachPlaylist) -> PlaylistDto.fromEntity(eachPlaylist)).toList();
 		playlistDtoList.forEach((dto) -> {
 			// getItemsInPlaylist 메서드 사용해서 해당 플레이리스트에 있는 아이템들을 매핑
-			dto.setPlaylistItemDtoList(getItemsInPlaylist(dto.getPlaylistId()));
+			try {
+				dto.setPlaylistItemDtoList(getItemsInPlaylist(dto.getPlaylistId()));
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			List<PlaylistLike> playlistLikeList = playlistLikeDao.findAllByPlaylistPlaylistId(dto.getPlaylistId());
 			dto.setPlaylistLikeList(playlistLikeList);
 		});
@@ -341,7 +359,15 @@ public class FeatureService {
 		// 플레이리스트의 리스트를 Dto로 매핑시켜서 각 playlist에 대한 추가정보들을 매핑
 		List<PlaylistDto> likedPlaylistDtoList = likedPlaylistList.stream().map((eachPlaylist) -> PlaylistDto.fromEntity(eachPlaylist)).toList();
 		likedPlaylistDtoList.forEach((dto) -> {
-			dto.setPlaylistItemDtoList(getItemsInPlaylist(dto.getPlaylistId()));
+			try {
+				dto.setPlaylistItemDtoList(getItemsInPlaylist(dto.getPlaylistId()));
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			List<PlaylistLike> playlistLikeList = playlistLikeDao.findAllByPlaylistPlaylistId(dto.getPlaylistId());
 			dto.setPlaylistLikeList(playlistLikeList);
 		});
@@ -402,8 +428,10 @@ public class FeatureService {
 	 * 해당 playlist에 포함된 playlist items들의 리스트를 리턴
 	 * @param playlistItem
 	 * @return
+	 * @throws JsonProcessingException 
+	 * @throws JsonMappingException 
 	 */
-	public List<PlaylistItemDto> getItemsInPlaylist(Long playlistId) {		
+	public List<PlaylistItemDto> getItemsInPlaylist(Long playlistId) throws JsonMappingException, JsonProcessingException {		
 		log.info("getItemsInPlaylist(playlistId={})", playlistId);
 		
 		List<PlaylistItem> playlistItemsList = playlistItemDao.findAllByPlaylistPlaylistIdOrderByNthInPlaylist(playlistId);
@@ -511,8 +539,10 @@ public class FeatureService {
 	/**
 	 * PlaylistItemDto를 아규먼트로 받아, 해당 해당 작품에 대한 디테일 정보 가져옴
 	 * @return
+	 * @throws JsonProcessingException 
+	 * @throws JsonMappingException 
 	 */
-	private PlaylistItemDto setWorkDetails(PlaylistItemDto playlistItemDto) {
+	private PlaylistItemDto setWorkDetails(PlaylistItemDto playlistItemDto) throws JsonMappingException, JsonProcessingException {
 		log.info("setPoster(playlistItemDto={})", playlistItemDto);
 		
 		switch (playlistItemDto.getCategory()) {

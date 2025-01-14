@@ -7,6 +7,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,9 +24,6 @@ public class ImdbRatingUtil {
 
     @Value("${tmdb.hd.token}")
     private String TMDB_TOKEN;
-
-    @Value("${tmdb.api-key}")
-    private String API_KEY;
 
     private final ImdbRatingsRepository imdbRatingsDao;
 
@@ -66,20 +67,24 @@ public class ImdbRatingUtil {
 
         RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TMDB_TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
         String targetUrl = "";
 
         switch (category) {
             case "movie":
                targetUrl = UriComponentsBuilder.fromUriString(BASE_URL)
                        .path("/movie/{movie_id}/external_ids")
-                       .queryParam("api_key", API_KEY)
                        .buildAndExpand(String.valueOf(tmdb_id))
                        .toUriString();
                break;
             case "tv":
                 targetUrl = UriComponentsBuilder.fromUriString(BASE_URL)
                         .path("/tv/{series_id}/external_ids")
-                        .queryParam("api_key", API_KEY)
                         .buildAndExpand(String.valueOf(tmdb_id))
                         .toUriString();
                 break;
@@ -88,7 +93,18 @@ public class ImdbRatingUtil {
         }
 
         // String imdb_id 의 값만 뽑아서 리턴해주고 싶음
-        String jsonResult = restTemplate.getForObject(targetUrl, String.class);
+//        String jsonResult = restTemplate.getForObject(targetUrl, String.class);
+        // exchange() 메서드를 사용하여 헤더를 포함한 요청 보내기
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+
+        // 응답에서 IMDB ID 추출 (예: JSON 파싱)
+        String jsonResult = response.getBody();
+
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> resultMap = null;

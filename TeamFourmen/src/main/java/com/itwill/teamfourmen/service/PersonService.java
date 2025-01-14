@@ -4,10 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itwill.teamfourmen.dto.person.*;
+
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -22,18 +27,30 @@ import java.util.stream.Collectors;
 @Service
 public class PersonService {
 
-	@Value("${tmdb.api-key}")
-	private String apiKey;
+	@Value("${tmdb.hd.token}")
+	private String token;
+	
+	@Value("${tmdb.api.baseurl}")
+	private String baseUrl;
+	
 	private static final String POPULAR = "popular";
-    private static final String apiUrl = "https://api.themoviedb.org/3";
-	private final WebClient webClient;
+	private WebClient webClient;
 
 	// 인물 리스트 페이징 처리를 위한 변수 선언.
 	int pagesShowInBar = 10; // 페이징 바에 얼마큼씩 보여줄 건지 설정. (10개씩 보여줄 것임)
 
-	@Autowired
-	public PersonService(WebClient webClient) {
-		this.webClient = webClient;
+	@PostConstruct
+	public void init() {
+		this.webClient = WebClient.builder()
+				.baseUrl(this.baseUrl)
+				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.defaultHeader(HttpHeaders.ACCEPT, "application/json")                
+			    .filter((request, next) -> {
+			        System.out.println("Request: " + request.method() + " " + request.url());
+			        request.headers().forEach((name, values) -> values.forEach(value -> System.out.println(name + "=" + value)));
+			        return next.exchange(request);
+			    })
+				.build();	
 	}
 
 	/**
@@ -67,7 +84,7 @@ public class PersonService {
     public PageAndListDto getPersonListEnUS(int page) {
 
     	// API 요청 주소 생성. (페이지에 해당하는 인물의 리스트를 받아옴)
-    	String uri = String.format(apiUrl + "/person/" + POPULAR + "?api_key=%s&language=en-US&page=%d", apiKey, page);
+    	String uri = String.format(baseUrl + "/person/" + POPULAR + "?language=en-US&page=%d", page);
 
     	PageAndListDto pageAndListDtoEnUS;
         pageAndListDtoEnUS = webClient.get()
@@ -82,7 +99,7 @@ public class PersonService {
 	public PageAndListDto getPersonListKoKR(int page) {
 
 		// API 요청 주소 생성. (페이지에 해당하는 인물의 리스트를 받아옴)
-		String uri = String.format(apiUrl + "/person/" + POPULAR + "?api_key=%s&language=ko-KR&page=%d", apiKey, page);
+		String uri = String.format(baseUrl + "/person/" + POPULAR + "?language=ko-KR&page=%d", page);
 
 		PageAndListDto pageAndListDtoKoKR;
 		pageAndListDtoKoKR = webClient.get()
@@ -118,7 +135,7 @@ public class PersonService {
 	public DetailsPersonDto getPersonDetailsEnUS(int id) {
 
 		// API 요청 주소 생성. (각 인물의 상세 정보를 받아옴)
-		String uri = String.format(apiUrl + "/person/" + id + "?api_key=%s&language=en-US", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id);
 
 		DetailsPersonDto detailsPersonDtoEnUS;
 		detailsPersonDtoEnUS = webClient.get()
@@ -133,7 +150,7 @@ public class PersonService {
 	public DetailsPersonDto getPersonDetailsKoKR(int id) {
 
 		// API 요청 주소 생성. (각 인물의 상세 정보를 받아옴)
-		String uri = String.format(apiUrl + "/person/" + id + "?api_key=%s&language=ko-KR", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id);
 
 		DetailsPersonDto detailsPersonDtoKoKR;
 		detailsPersonDtoKoKR = webClient.get()
@@ -156,7 +173,7 @@ public class PersonService {
 	public ExternalIDsDto getExternalIDs(int id) {
 
 		// API 요청 주소 생성. (각 인물의 SNS, 유튜브, 홈페이지 등의 외부 아이디 정보를 받아옴)
-		String uri = String.format(apiUrl + "/person/" + id + "/external_ids" + "?api_key=%s", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/external_ids");
 
 		ExternalIDsDto externalIDsDto;
 		externalIDsDto = webClient.get()
@@ -179,7 +196,7 @@ public class PersonService {
 	public MovieCreditsDto getMovieCreditsEnUS(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/movie_credits" + "?api_key=%s&language=en-US", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/movie_credits" + "?language=en-US");
 
 		MovieCreditsDto movieCreditsDtoEnUS;
 		movieCreditsDtoEnUS = webClient.get()
@@ -194,7 +211,7 @@ public class PersonService {
 	public MovieCreditsDto getMovieCreditsKoKR(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/movie_credits" + "?api_key=%s&language=ko-KR", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/movie_credits" + "?language=ko-KR");
 
 		MovieCreditsDto movieCreditsDtoKoKR;
 		movieCreditsDtoKoKR = webClient.get()
@@ -217,7 +234,7 @@ public class PersonService {
 	public TvCreditsDto getTvCreditsEnUS(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/tv_credits" + "?api_key=%s&language=en-US", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/tv_credits" + "?language=en-US");
 
 		TvCreditsDto tvCreditsDtoEnUS;
 		tvCreditsDtoEnUS = webClient.get()
@@ -232,7 +249,7 @@ public class PersonService {
 	public TvCreditsDto getTvCreditsKoKR(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/tv_credits" + "?api_key=%s&language=ko-KR", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/tv_credits" + "?&language=ko-KR");
 
 		TvCreditsDto tvCreditsDtoKoKR;
 		tvCreditsDtoKoKR = webClient.get()
@@ -255,7 +272,7 @@ public class PersonService {
 	public CombinedCreditsDto getCombinedCreditsEnUS(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/combined_credits" + "?api_key=%s&language=en-US", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/combined_credits" + "?language=en-US");
 
 		CombinedCreditsDto combinedCreditsDtoEnUS;
 		combinedCreditsDtoEnUS = webClient.get()
@@ -270,7 +287,7 @@ public class PersonService {
 	public CombinedCreditsDto getCombinedCreditsKoKR(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/combined_credits" + "?api_key=%s&language=ko-KR", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/combined_credits" + "?language=ko-KR");
 
 		CombinedCreditsDto combinedCreditsDtoKoKR;
 		combinedCreditsDtoKoKR = webClient.get()
@@ -293,7 +310,7 @@ public class PersonService {
 	public List<CombinedCreditsCastDto> getCombinedCreditsCastEnUS(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/combined_credits" + "?api_key=%s&language=en-US", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/combined_credits" + "?language=en-US");
 
 		CombinedCreditsCastDto combinedCreditsCastDtoEnUS;
 		JsonNode node = webClient.get()
@@ -319,7 +336,7 @@ public class PersonService {
 	public List<CombinedCreditsCastDto> getCombinedCreditsCastKoKR(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/combined_credits" + "?api_key=%s&language=ko-KR", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/combined_credits" + "?language=ko-KR");
 
 		CombinedCreditsCastDto combinedCreditsCastDtoKoKR;
 		JsonNode node = webClient.get()
@@ -353,7 +370,7 @@ public class PersonService {
 	public List<CombinedCreditsCrewDto> getCombinedCreditsCrewEnUS(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/combined_credits" + "?api_key=%s&language=en-US", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/combined_credits" + "?language=en-US");
 
 		CombinedCreditsCrewDto combinedCreditsCrewDtoEnUS;
 		JsonNode node = webClient.get()
@@ -379,7 +396,7 @@ public class PersonService {
 	public List<CombinedCreditsCrewDto> getCombinedCreditsCrewKoKR(int id) {
 
 		// API 요청 주소 생성.
-		String uri = String.format(apiUrl + "/person/" + id + "/combined_credits" + "?api_key=%s&language=ko-KR", apiKey);
+		String uri = String.format(baseUrl + "/person/" + id + "/combined_credits" + "?language=ko-KR");
 
 		CombinedCreditsCrewDto combinedCreditsCrewDtoKoKR;
 		JsonNode node = webClient.get()

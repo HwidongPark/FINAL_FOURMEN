@@ -201,11 +201,11 @@ public class MovieController {
 		
 		// 영화 디테일 정보 가져오기
 		MovieDetailsDto movieDetailsDto = apiUtil.getMovieDetails(id);
-		//log.info("movieDetailsDto={}", movieDetailsDto);
+		log.info("movieDetailsDto={}", movieDetailsDto);
 		
 		// TODO: 만약 credit dto가 없을 리가 있을까 생각해보자..
 		MovieCreditDto movieCreditDto = apiUtil.getMovieCredit(id);
-		//log.info("movieCreditDto={}", movieCreditDto);
+		log.info("movieCreditDto={}", movieCreditDto);
 		List<MovieCrewDto> directorList = movieCreditDto.getCrew().stream().filter((x) -> x.getJob().equals("Director")).toList();	// 감독만 꺼내온 리스트
 		List<MovieCastDto> castList = movieCreditDto.getCast();	// 출연진만 꺼내온 리스트
 		
@@ -217,7 +217,7 @@ public class MovieController {
 			movieTrailerList = movieVideoList.stream().filter((x) -> x.getType().equals("Trailer")).toList();
 		}
 		
-		//log.info("movieVideoList = {}", movieVideoList);
+		log.info("movieVideoList = {}", movieVideoList);
 		
 		
 		// 영화 provider 리스트 가져오기
@@ -245,15 +245,15 @@ public class MovieController {
 		// 해당 영화의 Collection이 있으면 Collection리스트 가져오기
 		if(movieDetailsDto.getBelongsToCollection() != null) {
 			List<MovieDetailsDto> movieCollectionList = apiUtil.getMovieCollectionList(movieDetailsDto.getBelongsToCollection().getId());
-			model.addAttribute("movieCollectionList", movieCollectionList);
+			model.addAttribute("movieCollectionList", movieCollectionList);			
 		}
 		
 		// 해당영화의 social media id 가져옴
 		MovieExternalIdDto movieExternalIdDto = apiUtil.getMovieExternalId(id);
-		
+		log.info("movieExternalIdDto = " + movieExternalIdDto.toString());
 		// 해당 영화와 관련된 추천영화 목록 가져옴
 		List<MovieDetailsDto> recommendedList = apiUtil.getRecommendedMovie(id);
-		
+		log.info("recommendedList = " + recommendedList.toString());
 		// 좋아요 눌렀는지 여부 가져옴
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String email = authentication.getName();

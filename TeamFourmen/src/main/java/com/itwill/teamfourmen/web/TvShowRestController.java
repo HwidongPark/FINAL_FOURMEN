@@ -1,5 +1,7 @@
 package com.itwill.teamfourmen.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.itwill.teamfourmen.dto.tvshow.TvShowListDTO;
 import com.itwill.teamfourmen.dto.tvshow.TvShowQueryParamDTO;
 import com.itwill.teamfourmen.service.TvShowApiUtil;
@@ -20,7 +22,7 @@ public class TvShowRestController {
 
 
     @GetMapping("/trend-list")
-    public ResponseEntity<TvShowListDTO> getAdditonalTrendList (@RequestParam(name = "timeWindow") String timeWindow, @RequestParam(name = "page") int page){
+    public ResponseEntity<TvShowListDTO> getAdditonalTrendList (@RequestParam(name = "timeWindow") String timeWindow, @RequestParam(name = "page") int page) throws JsonMappingException, JsonProcessingException{
         log.info("Get AdditionalTrendList - timeWindow = {}, Page = {}", timeWindow, page);
 
         TvShowListDTO trendListDto = util.getTrendTvShowList(timeWindow,page);
@@ -29,7 +31,7 @@ public class TvShowRestController {
     }
 
     @GetMapping("/ott-list")
-    public ResponseEntity<TvShowListDTO> getAddtionalOttTvShowList (@RequestParam(name = "platform") String platform, @RequestParam(name = "page") int page){
+    public ResponseEntity<TvShowListDTO> getAddtionalOttTvShowList (@RequestParam(name = "platform") String platform, @RequestParam(name = "page") int page) throws JsonMappingException, JsonProcessingException{
         log.info("Get AdditionalOttTvShowList - platform = {}, page = {}", platform, page);
 
         TvShowListDTO ottTvShowList = util.getOttTvShowList(platform, page);

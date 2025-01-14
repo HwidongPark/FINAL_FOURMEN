@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,7 +27,9 @@ import com.itwill.teamfourmen.dto.movie.MovieProviderDto;
 import com.itwill.teamfourmen.dto.movie.MovieProviderItemDto;
 import com.itwill.teamfourmen.dto.movie.MovieVideoDto;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -36,6 +40,22 @@ public class MovieApiUtil {
 	
 	@Value("${tmdb.api.baseurl}")
 	private String baseUrl;
+	
+	private WebClient client;
+	
+	@PostConstruct
+	public void init() {
+		this.client = WebClient.builder()
+				.baseUrl(this.baseUrl)
+				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.defaultHeader(HttpHeaders.ACCEPT, "application/json")
+			    .filter((request, next) -> {
+			        System.out.println("Request: " + request.method() + " " + request.url());
+			        request.headers().forEach((name, values) -> values.forEach(value -> System.out.println(name + "=" + value)));
+			        return next.exchange(request);
+			    })
+				.build();
+	}
 	
 	/**
 	 * 영화 리스트를 MovieListDto객체로 돌려주는 메서드.
@@ -108,11 +128,9 @@ public class MovieApiUtil {
 			watchRegionVariable = null;
 		}
 		
-		String watchRegion = watchRegionVariable;
+		String watchRegion = watchRegionVariable;			
 		
-		WebClient client = WebClient.create(baseUrl);
-		
-		MovieListDto movieListDto = client.get()
+		MovieListDto movieListDto = this.client.get()
 				.uri(uriBuilder -> uriBuilder
 						.path(uriToPassIn)
 						.queryParam("page", paramDto.getPage())
@@ -127,15 +145,13 @@ public class MovieApiUtil {
 						.queryParam("watch_region", watchRegion)
 						.queryParam("with_watch_providers", providers)	// 고치기
 						.queryParam("query", paramDto.getQuery())
-						.build())				
-				.header("Authorization", token)
-				.retrieve()
+						.build())						
+				.retrieve()				
 				.bodyToMono(MovieListDto.class)
 				.block();
 		
 		return movieListDto;
 	}
-	
 	
 	
 	/**
@@ -146,11 +162,9 @@ public class MovieApiUtil {
 	 */
 	public List<MovieGenreDto> getMovieGenreList() {
 		
-		WebClient client = WebClient.create(baseUrl);
 		
-		String json = client.get()
+		String json = this.client.get()
 			.uri("/genre/movie/list?language=ko")
-			.header("Authorization", token)
 			.retrieve()
 			.bodyToMono(String.class)
 			.block();			
@@ -184,16 +198,19 @@ public class MovieApiUtil {
 		
 		String queryParam = "?language=ko";
 		
-		WebClient client = WebClient.create(baseUrl);
+		WebClient client = WebClient.builder()
+				.baseUrl(this.baseUrl)
+				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+				.defaultHeader(HttpHeaders.ACCEPT, "application/json")
+				.build();
 		
 		MovieDetailsDto movieDetailsDto = client.get()
 			.uri("/movie/" + id + queryParam)
-			.header("Authorization", token)
 			.retrieve()
 			.bodyToMono(MovieDetailsDto.class)
 			.block();
 		
-		// log.info("movieDetailsDto={}", movieDetailsDto);
+		 log.info("movieDetailsDto={}", movieDetailsDto);
 		
 		return movieDetailsDto;
 	}
@@ -209,12 +226,9 @@ public class MovieApiUtil {
 //		log.info("MovieCreditDto(id={})", id);
 		
 		String queryParam = "?language=ko";
-		
-		WebClient client = WebClient.create(baseUrl);
-		
-		MovieCreditDto movieCreditDto = client.get()
+				
+		MovieCreditDto movieCreditDto = this.client.get()
 				.uri("/movie/"+ id + "/credits")
-				.header("Authorization", token)
 				.retrieve()
 				.bodyToMono(MovieCreditDto.class)
 				.block();
@@ -238,10 +252,8 @@ public class MovieApiUtil {
 		
 		String queryParam = "?language=ko";
 		
-		WebClient client = WebClient.create(baseUrl);
-		String json = client.get()
+		String json = this.client.get()
 			.uri("/movie/" + id + "/videos" + queryParam)
-			.header("Authorization", token)
 			.retrieve()
 			.bodyToMono(String.class)
 			.block();
@@ -277,10 +289,8 @@ public class MovieApiUtil {
 		
 //		log.info("getMovieProviderList(id={})", id);
 
-		WebClient client = WebClient.create(baseUrl);
-		String json = client.get()
+		String json = this.client.get()
 			.uri("/movie/" + id + "/watch/providers")
-			.header("Authorization", token)
 			.retrieve()
 			.bodyToMono(String.class)
 			.block();
@@ -317,10 +327,8 @@ public class MovieApiUtil {
 		
 		String queryParam = "?language=ko";
 		
-		WebClient client = WebClient.create(baseUrl);
-		JsonNode json = client.get()
+		JsonNode json = this.client.get()
 			.uri("/collection/" + collectionId + queryParam)
-			.header("Authorization", token)
 			.retrieve()
 			.bodyToMono(JsonNode.class)
 			.block();
@@ -349,10 +357,8 @@ public class MovieApiUtil {
 	 */
 	public MovieExternalIdDto getMovieExternalId(int id) {
 		
-		WebClient client = WebClient.create(baseUrl);
-		MovieExternalIdDto externalIdDto = client.get()
+		MovieExternalIdDto externalIdDto = this.client.get()
 				.uri("/movie/" + id + "/external_ids")
-				.header("Authorization", token)
 				.retrieve()
 				.bodyToMono(MovieExternalIdDto.class)
 				.block();
@@ -372,10 +378,8 @@ public class MovieApiUtil {
 		
 		String queryParam = "?language=ko";
 		
-		WebClient client = WebClient.create(baseUrl);
-		JsonNode node = client.get()
+		JsonNode node = this.client.get()
 				.uri("/movie/" + id + "/recommendations" + queryParam)
-				.header("Authorization", token)
 				.retrieve()
 				.bodyToMono(JsonNode.class)
 				.block();
@@ -404,12 +408,9 @@ public class MovieApiUtil {
 	 * @return 만약 해당 국가코드의 releaseDate정보가 있으면 List<MovieReleaseDateItemDto>를 리턴, 없으면 null을 리턴
 	 */
 	public List<MovieReleaseDateItemDto> getMovieReleaseDateInfo(int id, String countryCode) {
-		
-		WebClient client = WebClient.create(baseUrl);
-		
-		JsonNode node = client.get()
+				
+		JsonNode node = this.client.get()
 				.uri("/movie/" + id + "/release_dates")
-				.header("Authorization", token)
 				.retrieve()
 				.bodyToMono(JsonNode.class)
 				.block();
@@ -444,12 +445,9 @@ public class MovieApiUtil {
 	 * @throws IllegalArgumentException
 	 */
 	public List<MovieProviderItemDto> getAllMovieProviders() throws JsonProcessingException, IllegalArgumentException {
-		
-		WebClient client = WebClient.create(baseUrl);
-		
-		JsonNode node = client.get()
+				
+		JsonNode node = this.client.get()
 				.uri("/watch/providers/movie")
-				.header("Authorization", token)
 				.retrieve()
 				.bodyToMono(JsonNode.class)
 				.block();

@@ -6,6 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itwill.teamfourmen.domain.*;
 import com.itwill.teamfourmen.dto.board.CommentDto;
 import com.itwill.teamfourmen.dto.board.PostDto;
@@ -22,7 +25,11 @@ import com.itwill.teamfourmen.service.TvShowApiUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,8 +50,8 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/tv")
 public class TvShowController {
 
-	@Value("${tmdb.api-key}")
-	private String API_KEY;
+    @Value("${tmdb.hd.token}")
+	private String TOKEN;
 
 	private final TvShowApiUtil apiUtil;
 
@@ -57,7 +64,7 @@ public class TvShowController {
 	
 
 	@GetMapping("/main")
-	public String getTvShowMain(Model model){
+	public String getTvShowMain(Model model) throws JsonMappingException, JsonProcessingException{
 		log.info("GET TV SHOW MAIN VIEW");
 
 		// Random 객체 생성 -> 랜덤한 페이지를 보내기 위해
@@ -102,7 +109,7 @@ public class TvShowController {
 	}
 
 	@GetMapping("/top_rated")
-	public String getTopRatedTvShowList(Model model) throws ParseException {
+	public String getTopRatedTvShowList(Model model) throws ParseException, JsonMappingException, JsonProcessingException {
 		log.info("GET Top Rated Tv Show List");
 
 		getInitialList("top_rated", model);
@@ -111,7 +118,7 @@ public class TvShowController {
 	}
 
 	@GetMapping("/trending/{timeWindow}")
-	public String getPopularTvShowList(Model model, @PathVariable(name = "timeWindow") String timeWindow){
+	public String getPopularTvShowList(Model model, @PathVariable(name = "timeWindow") String timeWindow) throws JsonMappingException, JsonProcessingException{
 		log.info("GET Trending Tv Show List");
 
 		TvShowListDTO listDTO = apiUtil.getTrendTvShowList(timeWindow, 1);
@@ -133,7 +140,7 @@ public class TvShowController {
 	 */
 
 	@GetMapping("/filter")
-	public String getFilterTvShowList(Model model, @ModelAttribute TvShowQueryParamDTO filterDTO) {
+	public String getFilterTvShowList(Model model, @ModelAttribute TvShowQueryParamDTO filterDTO) throws JsonMappingException, JsonProcessingException {
 		log.info("Get Filter Tv Show List - Filter Dto = {}", filterDTO);
 
 		filterDTO.setListCategory("filter");
@@ -144,7 +151,7 @@ public class TvShowController {
 	}
 
   @GetMapping("/search")
-	public String getSearchTvShowList(Model model, @ModelAttribute TvShowQueryParamDTO searchDTO) {
+	public String getSearchTvShowList(Model model, @ModelAttribute TvShowQueryParamDTO searchDTO) throws JsonMappingException, JsonProcessingException {
 		log.info("Get Search Tv Show List - Search Dto = {}", searchDTO);
 
 		searchDTO.setListCategory("search");
@@ -156,7 +163,7 @@ public class TvShowController {
 
 	// 리스트에서 tvshow를 클릭했을때 상세페이지로 넘어가는 부분
 	@GetMapping(value = {"/details/{id}" })
-	public String getTvShowDetails(Model model, @PathVariable(name = "id") int id) {
+	public String getTvShowDetails(Model model, @PathVariable(name = "id") int id) throws JsonMappingException, JsonProcessingException {
 		log.info("Get Tv Show Details = {}", id);
 //		log.info("API KEY = {}", API_KEY);
 		Review myReview = null;
@@ -167,13 +174,12 @@ public class TvShowController {
 		int seriesId = id;
 
 		String apiUri = "https://api.themoviedb.org/3/tv";
-		// 드라마 정보
+		// 드라마 정보		
 		TvShowDTO tvShowDTO = apiUtil.getTvShowDetails(id);
 
-		//log.info("tvShowDto = {}", tvShowDTO.toString());
+		log.info("tvShowDto = {}", tvShowDTO.toString());
 
 		List<TvShowSeasonDTO> seasonList = tvShowDTO.getSeasons();
-
 		model.addAttribute("tvShowDto", tvShowDTO);
 
 		model.addAttribute("seasonList", seasonList);
@@ -182,6 +188,7 @@ public class TvShowController {
 
 		TvShowWatchProviderListDTO tvShowWatchProviderListDTO = apiUtil.getTvShowProvider(id);
 
+		log.info("tvShowWatchProviderListDTO = {}", tvShowWatchProviderListDTO);
 		String watchRegion = "KR";
 
 		TvShowWatchProviderRegionDTO tvShowWatchProviderRegionDTO = tvShowWatchProviderListDTO.getResults().get(watchRegion);
@@ -199,12 +206,25 @@ public class TvShowController {
 		// 시청 등급
 		String contentRatingsUrl = UriComponentsBuilder.fromUriString(apiUri)
 				.path("/{seriesId}/content_ratings")
-				.queryParam("api_key", API_KEY)
 				.buildAndExpand(String.valueOf(seriesId))
 				.toUriString();
+		
+		HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
-		TvShowContentRatingsListDTO tvShowContentRatingsList = restTemplate.getForObject(contentRatingsUrl, TvShowContentRatingsListDTO.class);
+//		TvShowContentRatingsListDTO tvShowContentRatingsList = restTemplate.getForObject(contentRatingsUrl, TvShowContentRatingsListDTO.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+        		contentRatingsUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        TvShowContentRatingsListDTO tvShowContentRatingsList = objectMapper.readValue(response.getBody(), TvShowContentRatingsListDTO.class);
 		List<TvShowContentRatingsDTO> results = tvShowContentRatingsList.getResults();
 
 		TvShowContentRatingsDTO rating = new TvShowContentRatingsDTO();
@@ -230,11 +250,18 @@ public class TvShowController {
 		// SNS 불러오기
 		String getTvShowSnsUrl = UriComponentsBuilder.fromUriString(apiUri)
 				.path("/{seriesId}/external_ids")
-				.queryParam("api_key", API_KEY)
+				.queryParam("api_key", TOKEN)
 				.buildAndExpand(String.valueOf(seriesId))
 				.toUriString();
 
-		TvShowSnsDTO tvShowSnsDTO = restTemplate.getForObject(getTvShowSnsUrl, TvShowSnsDTO.class);
+        ResponseEntity<String> tvShowSnsResponse = restTemplate.exchange(
+        		contentRatingsUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+
+        TvShowSnsDTO tvShowSnsDTO = objectMapper.readValue(tvShowSnsResponse.getBody(), TvShowSnsDTO.class);
 
 		model.addAttribute("sns", tvShowSnsDTO);
 
@@ -252,12 +279,18 @@ public class TvShowController {
 		String getTvShowCreditUrl = UriComponentsBuilder.fromUriString(apiUri)
 				.path("/{seriesId}/credits")
 				.queryParam("language", "ko")
-				.queryParam("api_key", API_KEY)
 				.buildAndExpand(String.valueOf(seriesId))
 				.toUriString();
 
-		TvShowCreditListDTO tvShowCreditListDTO = restTemplate.getForObject(getTvShowCreditUrl, TvShowCreditListDTO.class);
-
+        ResponseEntity<String> tvShowCreditResponse = restTemplate.exchange(
+        		contentRatingsUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+        TvShowCreditListDTO tvShowCreditListDTO = objectMapper.readValue(tvShowCreditResponse.getBody(), TvShowCreditListDTO.class); 
+        
 		List<TvShowCreditDTO> tvShowCast = tvShowCreditListDTO.getCast();
 
 		List<TvShowCreditDTO> tvShowCrew = tvShowCreditListDTO.getCrew();
@@ -289,13 +322,21 @@ public class TvShowController {
 		String getTvShowRecoUrl = UriComponentsBuilder.fromUriString(apiUri)
 				.path("/{seriesId}/recommendations")
 				.queryParam("language", "ko")
-				.queryParam("api_key", API_KEY)
+				.queryParam("api_key", TOKEN)
 				.buildAndExpand(String.valueOf(seriesId))
 				.toUriString();
 
-		TvShowRecoListDTO tvShowRecoListDTO = restTemplate.getForObject(getTvShowRecoUrl, TvShowRecoListDTO.class);
-
-		//log.info("tvShowRecoList = {}",tvShowRecoListDTO.toString());
+//		TvShowRecoListDTO tvShowRecoListDTO = restTemplate.getForObject(getTvShowRecoUrl, TvShowRecoListDTO.class);
+        ResponseEntity<String> tvShowRecoListResponse = restTemplate.exchange(
+        		contentRatingsUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+        TvShowRecoListDTO tvShowRecoListDTO = objectMapper.readValue(tvShowRecoListResponse.getBody(), TvShowRecoListDTO.class);
+        
+		log.info("tvShowRecoList = {}",tvShowRecoListDTO.toString());
 
 		List<TvShowRecoDTO> tvShowRecoDTO = tvShowRecoListDTO.getResults();
 
@@ -395,7 +436,7 @@ public class TvShowController {
 
 
 	@GetMapping("/details/{id}/season/{season_number}")
-	public String getTvShowSeasonDetails(Model model, @PathVariable(name= "id") int id , @PathVariable(name = "season_number") int season_number){
+	public String getTvShowSeasonDetails(Model model, @PathVariable(name= "id") int id , @PathVariable(name = "season_number") int season_number) throws JsonMappingException, JsonProcessingException{
 
 		String apiUri = "https://api.themoviedb.org/3/tv";
 
@@ -443,7 +484,7 @@ public class TvShowController {
 		String getTvShowCreditUrl = UriComponentsBuilder.fromUriString(apiUri)
 				.path("/{seriesId}/season/{season_number}/credits")
 				.queryParam("language", "ko-KR")
-				.queryParam("api_key", API_KEY)
+				.queryParam("api_key", TOKEN)
 				.buildAndExpand(String.valueOf(id), String.valueOf(season_number))
 				.toUriString();
 
@@ -611,7 +652,7 @@ public class TvShowController {
 	
 	
 
-	private void getInitialList(String pageName, Model model) {
+	private void getInitialList(String pageName, Model model) throws JsonMappingException, JsonProcessingException {
 
 		TvShowQueryParamDTO paramDTO = new TvShowQueryParamDTO();
 		paramDTO.setListCategory(pageName);
@@ -629,7 +670,7 @@ public class TvShowController {
 		model.addAttribute("tvShowGenreDTO", tvShowGenre);
 	}
 
-	private void getInitialList(TvShowQueryParamDTO paramDTO, Model model) {
+	private void getInitialList(TvShowQueryParamDTO paramDTO, Model model) throws JsonMappingException, JsonProcessingException {
 
 		TvShowListDTO listDTO = apiUtil.getTvShowList(paramDTO);
 

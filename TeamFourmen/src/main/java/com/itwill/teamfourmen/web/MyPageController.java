@@ -1,5 +1,7 @@
 package com.itwill.teamfourmen.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.itwill.teamfourmen.domain.*;
 import com.itwill.teamfourmen.domain.Member;
 import com.itwill.teamfourmen.domain.MemberRepository;
@@ -61,7 +63,7 @@ public class MyPageController {
     }
 
     @GetMapping("/details/{memberId}/profile")
-    public String getMyPageDetails(Model model, @PathVariable (name = "memberId") Long memberId){
+    public String getMyPageDetails(Model model, @PathVariable (name = "memberId") Long memberId) throws JsonMappingException, JsonProcessingException{
         log.info("get MY PAGE DETAILS MEMBERID = {}", memberId);
 
         Member profile = myPageService.getMember(memberId);
@@ -318,7 +320,7 @@ public class MyPageController {
 	    };
     
 	    @GetMapping("/details/{memberId}/reviews")
-	    public String getReviews(Model model, @PathVariable( name = "memberId") Long memberId){
+	    public String getReviews(Model model, @PathVariable( name = "memberId") Long memberId) throws JsonMappingException, JsonProcessingException{
 
         List<Review> myAllReview =  featureService.getAllMyReview(memberId);
 
@@ -459,9 +461,11 @@ public class MyPageController {
      * @param playlistId
      * @param model
      * @return
+     * @throws JsonProcessingException 
+     * @throws JsonMappingException 
      */
     @GetMapping("/details/{memberId}/playlist/{playlistId}")
-    public String getPlaylistDetails(@PathVariable(name = "memberId") Long memberId, @PathVariable(name = "playlistId") Long playlistId, Model model) {
+    public String getPlaylistDetails(@PathVariable(name = "memberId") Long memberId, @PathVariable(name = "playlistId") Long playlistId, Model model) throws JsonMappingException, JsonProcessingException {
     	log.info("getPlaylistsDetails(memberId={}, playlistId={})", memberId, playlistId);
     	
     	// 플레이리스트 가져옴
@@ -499,7 +503,7 @@ public class MyPageController {
     }
     
     @GetMapping("/details/{memberId}/{category}")
-    public String getLikedList(Model model, @PathVariable(name = "memberId") Long memberId, @PathVariable(name = "category") String category){
+    public String getLikedList(Model model, @PathVariable(name = "memberId") Long memberId, @PathVariable(name = "category") String category) throws JsonMappingException, JsonProcessingException{
         log.info("GET LIKED LIST - MEMBERID = {}, CATEGORY = {}", memberId, category);
 
         Member member = Member.builder().memberId(memberId).build();
@@ -513,6 +517,7 @@ public class MyPageController {
             switch (category) {
                 case "movie":
                     MovieDetailsDto movieDto = movieApiUtil.getMovieDetails(works.getTmdbId());
+                    log.info("movieDTO = {}", movieDto);
                     mypageDTO.setId(movieDto.getId());
                     mypageDTO.setName(movieDto.getTitle());
                     mypageDTO.setCategory(category);

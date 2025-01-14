@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.reactive.socket.server.WebSocketService;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.itwill.teamfourmen.dto.chat.ChatMessageDto;
 import com.itwill.teamfourmen.dto.chat.ChatRoomDto;
 import com.itwill.teamfourmen.dto.movie.MovieDetailsDto;
@@ -37,7 +39,7 @@ public class WebSocketChatController {
 	
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/openchat/{category}/{roomId}")
-	public String getOpenChatWindow(@PathVariable("category") String category, @PathVariable("roomId") int roomId, Model model) {
+	public String getOpenChatWindow(@PathVariable("category") String category, @PathVariable("roomId") int roomId, Model model) throws JsonMappingException, JsonProcessingException {
 		
 		log.info("getOpenChatWindow(category={}, roomId={})", category, roomId);
 		

@@ -74,9 +74,12 @@ public class PersonController {
 //		log.info("details(id={})", id);
 
 		// 서비스 메서드 호출 (인물의 id 값을 파라미터로 전달)
+		log.info("1111111111111111");
+		
 		DetailsPersonDto detailsPersonDtoEnUS = personService.getPersonDetailsEnUS(id);
+		log.info("22222222222222222222");
 		DetailsPersonDto detailsPersonDtoKoKR = personService.getPersonDetailsKoKR(id);
-
+		log.info("3333333333333333333");
 
 		// 인물의 생년월일을 처리하고 전달하는 코드.
 		if (detailsPersonDtoKoKR.getBirthday() != null) {
@@ -97,15 +100,17 @@ public class PersonController {
 //		// 모델 객체에 인물의 나이 추가
 //		model.addAttribute("age", age);
 
-
+		log.info("444444444444444444");
 		ExternalIDsDto externalIDsDto = personService.getExternalIDs(id);
-
+		log.info("5555555555555555555");
 		CombinedCreditsDto combinedCreditsDtoEnUS = personService.getCombinedCreditsEnUS(id);
+		log.info("66666666666666666666");
 		CombinedCreditsDto combinedCreditsDtoKoKR = personService.getCombinedCreditsKoKR(id);
-
+		log.info("777777777777777777");
 		List<CombinedCreditsCastDto> combinedCreditsCastListEnUS = personService.getCombinedCreditsCastEnUS(id);
+		log.info("888888888888888888");
 		List<CombinedCreditsCastDto> combinedCreditsCastListKoKR = personService.getCombinedCreditsCastKoKR(id);
-
+		log.info("9999999999999999999999999");
 		List<CombinedCreditsCrewDto> combinedCreditsCrewListEnUS = personService.getCombinedCreditsCrewEnUS(id);
 		List<CombinedCreditsCrewDto> combinedCreditsCrewListKoKR = personService.getCombinedCreditsCrewKoKR(id);
 

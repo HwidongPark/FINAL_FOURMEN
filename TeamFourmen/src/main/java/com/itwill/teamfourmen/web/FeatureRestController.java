@@ -9,6 +9,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.itwill.teamfourmen.domain.NicknameInterceptor;
 import com.itwill.teamfourmen.domain.Playlist;
 import com.itwill.teamfourmen.domain.PlaylistItem;
@@ -125,9 +127,11 @@ public class FeatureRestController {
 	 * 플레이리스트 id를 아규먼트로 받아 해당 playlist에 있는 모든 playlist items들을 반환
 	 * @param playlistId
 	 * @return
+	 * @throws JsonProcessingException 
+	 * @throws JsonMappingException 
 	 */
 	@GetMapping("/playlist/get-items")
-	public ResponseEntity<List<PlaylistItemDto>> getItemsInPlaylist(@RequestParam(name="playlistId") Long playlistId) {
+	public ResponseEntity<List<PlaylistItemDto>> getItemsInPlaylist(@RequestParam(name="playlistId") Long playlistId) throws JsonMappingException, JsonProcessingException {
 		log.info("getItemsInPlaylist(playlistId={})", playlistId);
 		
 		List<PlaylistItemDto> playlistItemsList = featureService.getItemsInPlaylist(playlistId);

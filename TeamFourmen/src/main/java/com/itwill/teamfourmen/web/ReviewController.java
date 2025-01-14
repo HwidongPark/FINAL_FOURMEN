@@ -1,5 +1,7 @@
 package com.itwill.teamfourmen.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.itwill.teamfourmen.domain.*;
 import com.itwill.teamfourmen.dto.comment.ReviewCommentLikeDTO;
 import com.itwill.teamfourmen.dto.movie.MovieDetailsDto;
@@ -48,7 +50,7 @@ public class ReviewController {
 
     // 특정 영화 / TV 의 전체 리뷰를 불러옴
     @GetMapping("/{category}/{id}")
-    public String getAllReviews(Model model,@PathVariable(name = "category") String category ,@PathVariable(name = "id") int tmdbId){
+    public String getAllReviews(Model model,@PathVariable(name = "category") String category ,@PathVariable(name = "id") int tmdbId) throws JsonMappingException, JsonProcessingException{
         log.info("GET {} REVIEWS = {}", category, tmdbId);
 
         CombineReviewDTO combineReviewDTO = new CombineReviewDTO();
@@ -100,7 +102,7 @@ public class ReviewController {
 
     // 리뷰 ID를 바탕으로 한가지 리뷰를 보여주는 페이지
     @GetMapping("/{review_id}")
-    public String getReviewDetails(Model model, @PathVariable(name = "review_id") long reviewId) {
+    public String getReviewDetails(Model model, @PathVariable(name = "review_id") long reviewId) throws JsonMappingException, JsonProcessingException {
         log.info("GET REVIEW DETAILS = {}", reviewId);
 
         // review ID를 통해서 특정 리뷰 객체를 가져와서 view로 전달

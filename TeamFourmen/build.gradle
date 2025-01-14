@@ -64,6 +64,9 @@ dependencies {
 	
 	// aws위한 의존성
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // aws parameter store위한 의존성
+    implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:2.4.4")
+    implementation group: 'io.awspring.cloud', name: 'spring-cloud-starter-aws-parameter-store-config', version: '2.4.4'
 
 
 	// Querydsl ----

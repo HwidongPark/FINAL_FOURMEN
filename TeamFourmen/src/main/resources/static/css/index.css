@@ -1,0 +1,355 @@
+@charset "UTF-8";
+
+*, *::after, *::before {
+    box-sizing: border-box;
+}
+
+@font-face {
+    font-family: 'Pretendard-Regular';
+    src:
+        url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff')
+        format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Pretendard-Regular';
+    /*background-color: #000d15;*/
+    /*background-color: #121212;*/
+    background-color: rgb(31, 32, 41);;
+    color: rgb(196, 195, 202);
+}
+
+.random-container {
+    width: 100vw;
+    margin: 0;
+    font-size: 30px;
+}
+
+.OTT {
+    margin-left: 5rem;
+    margin-right: 5rem;
+    margin-bottom: 2rem;
+}
+
+.ott-title {
+    margin-left: 5px;
+    color: #fbc500;
+}
+
+.ott-toptitle {
+    margin-left: 5px;
+    color: rgb(196, 195, 202);
+}
+
+.ott-header {
+    position: relative;
+    display: flex;
+}
+
+.div1 {
+    font-size: 50px;
+    text-align: center;
+    background-color: deepskyblue;
+    height: 150px;
+}
+
+.div2 {
+    font-size: 50px;
+    text-align: center;
+    background-color: palevioletred;
+    height: 150px;
+}
+
+.div3 {
+    font-size: 50px;
+    text-align: center;
+    background-color: aquamarine;
+    height: 150px;
+}
+
+.div4 {
+    font-size: 50px;
+    text-align: center;
+    background-color: yellowgreen;
+    height: 150px;
+}
+
+.header-tvshow-daily {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-block-end: 48px;
+}
+
+.today-calender {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px;
+    width: 46px;
+    height: 45px;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.calender-month {
+    background-color: red;
+    border-radius: 8px 8px 0 0;
+    text-transform: uppercase;
+    font-size: 10px;
+    width: 100%;
+    height: 50%;
+    text-align: center;
+}
+
+.calender-date {
+    background-color: white;
+    border-radius: 0 0 8px 8px;
+    color: black;
+    font-size: 24px;
+    line-height: 32px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+.ott-container {
+    display: flex;
+}
+
+.scroller {
+    margin-left: 0;
+    padding: 0 0 0 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+}
+
+.scroller::-webkit-scrollbar {
+    display: none;
+}
+
+.tv_scoller {
+    padding-left: 0;
+}
+
+.ott_item_card {
+    display: inline-block;
+    overflow: hidden;
+    width: auto;
+    margin-right: 10px;
+    background-color: rgb(31, 32, 41);
+}
+
+.btn-slide-image {
+    background-color: transparent;
+    border: none;
+    color: #e9ecef;
+    opacity: 0.8;
+    font-size: 30px;
+    z-index: 2;
+}
+
+.btn-prev, .btn-next {
+    color: white;
+}
+
+.ott-item-wrapper {
+    position: relative;
+    display: inline-block;
+    width: auto; /* 부모 요소의 크기에 맞게 설정합니다 */
+    height: auto; /* 부모 요소의 크기에 맞게 설정합니다 */
+}
+
+.ott-item-wrapper-actor:hover .card-img-overlay {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: none;
+}
+
+.ott-item-wrapper-actor {
+    width: 200px; /* 원하는 부모 요소의 너비로 조정하세요 */
+    height: 200px; /* 원하는 부모 요소의 높이로 조정하세요 */
+    border-radius: 50%; /* 부모 요소를 원형으로 만듭니다 */
+    overflow: hidden; /* 이미지가 부모 요소를 넘어가지 않도록 합니다 */
+    position: relative;
+    display: inline-block;
+}
+
+.ott_img-actor {
+    width: 100%; /* 이미지를 부모 요소에 맞춰 가로로 채우기 */
+    height: auto; /* 이미지의 세로 비율을 유지하면서 자동으로 크기 조정 */
+    border-radius: 50%; /* 이미지를 원형으로 만듭니다 */
+    position: absolute; /* 이미지의 위치를 조정하기 위해 절대 위치로 설정합니다 */
+    top: 50%; /* 부모 요소의 상단을 기준으로 이미지를 세로 중앙에 배치합니다 */
+    left: 50%; /* 부모 요소의 왼쪽을 기준으로 이미지를 가로 중앙에 배치합니다 */
+    transform: translate(-50%, -50%);
+}
+
+.actor-card {
+    background-color: rgb(31, 32, 41);
+}
+
+.card-img-overlay {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.5s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ott-item-wrapper:hover .card-img-overlay {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: none;
+}
+
+.videobox {
+    width: 100%;
+    height: 100%;
+}
+
+.videobox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-title {
+    white-space: normal;
+}
+
+.card-text {
+    white-space: normal;
+}
+
+.titlepic {
+    color: #fbc500;
+    width: 24px;
+    font-size: 1.3rem;
+    display: inline-block;
+    margin-right: 5px;
+    margin-top: 5px;
+}
+
+.title_link {
+    color: rgb(196, 195, 202);
+    padding-bottom: 15px;
+    padding-left: 5px;
+    text-decoration: none;
+}
+
+.cmt_num {
+    color: #fbc500;
+}
+
+.ink_widget {
+    border-radius: 15px;
+    border: 3px solid rgb(196, 195, 202);
+}
+
+.w_title {
+    position: relative;
+    padding: 18px 20px 17px;
+    border-radius: 15px 15px 0 0;
+    border-bottom: 3px solid rgb(196, 195, 202);
+}
+
+.w_title h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgb(196, 195, 202);
+}
+
+.w_title a {
+    text-decoration: none;
+    color: rgb(196, 195, 202);
+}
+
+.w_list {
+    padding: 20px;
+}
+
+.wn, .list_unit {
+    display: table;
+    width: 100%;
+}
+
+.wn, .list_unit>li {
+    display: flex;
+}
+
+.wn, .list_unit>li>div {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.has_rankB {
+    padding-bottom: 5px;
+}
+
+.w_list .box_rank, .list_rank {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.box_rank.rank1, .list_rank {
+    background-color: #fbc500;
+    color: white;
+}
+
+.text_num {
+    display: inline-block;
+    font-size: 120px;
+    font-weight: bold;
+    line-height: 24px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.text_num {
+    left: 20px;
+    position: relative;
+    top: -4px;
+    color: #7a7e96;;
+}
+
+.ulno {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.actorpicture {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.actorimage {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

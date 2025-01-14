@@ -6,11 +6,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.itwill.teamfourmen.dto.tvshow.*;
+
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -29,9 +34,6 @@ import java.util.stream.Collectors;
 @Service
 public class TvShowApiUtil {
 
-    @Value("${tmdb.api-key}")
-    private String API_KEY;
-
     @Value("${tmdb.hd.token}")
     private String TOKEN;
 
@@ -40,6 +42,16 @@ public class TvShowApiUtil {
     private final String BASE_URL = "https://api.themoviedb.org/3";
 
     private final String BASE_DISCOVER_URL = "https://api.themoviedb.org/3/discover/tv";
+
+    public WebClient getWebClient(String baseUrl) {
+    	WebClient webClient = WebClient.builder()
+				.baseUrl(baseUrl)
+				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + TOKEN)
+				.defaultHeader(HttpHeaders.ACCEPT, "application/json")
+				.build();
+    	
+    	return webClient;
+    }
 
     /**
      * Tv Show List를 TvShowListDTO 객체로 돌려주는 메서드
@@ -110,7 +122,8 @@ public class TvShowApiUtil {
 
         String watchRegion = watchRegionVariable;
 
-        WebClient client = WebClient.create(BASE_URL);
+//        WebClient client = WebClient.create(BASE_URL);
+        WebClient client = this.getWebClient(BASE_URL);
 
         TvShowListDTO tvShowListDTO = client.get()
                 .uri(uriBuilder -> uriBuilder
@@ -126,41 +139,26 @@ public class TvShowApiUtil {
                                 .queryParam("with_watch_providers", providers)
                                 .queryParam("with_original_language", paramDTO.getWith_original_language())
                                 .queryParam("query", paramDTO.getQuery())
-                                .queryParam("api_key", API_KEY)
                                 .build())
-                .header("Authorization", TOKEN)
                 .retrieve()
                 .bodyToMono(TvShowListDTO.class)
                 .block();
-        // RestTemplate의 문제였음...webFlux webClient 사용하니 잘 됨....
 
-//        targetUrl = UriComponentsBuilder.fromUriString(BASE_URL)
-//                .path(pathUri)
-//                .queryParam("page", paramDTO.getPage())
-//                .queryParam("language", "ko-KR")
-//                .queryParam("sort_by" , paramDTO.getSortBy())
-//                .queryParam("first_air_date.gte", paramDTO.getFirst_air_date_gte())
-//                .queryParam("first_air_date.lte", paramDTO.getFirst_air_date_lte())
-//                .queryParam("with_genres", genres)
-//                .queryParam("with_status", paramDTO.getWith_status())
-//                .queryParam("watch_region" ,  watchRegionVariable)
-//                .queryParam("with_watch_providers", providers)
-//                .queryParam("with_original_language", paramDTO.getWith_original_language())
-//                .queryParam("query", paramDTO.getQuery())
-//                .queryParam("api_key", API_KEY)
-//                .toUriString();
-//        log.info("targetURL = {}", targetUrl);
-//
-//        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl, TvShowListDTO.class);
         return tvShowListDTO;
     }
 
 
-    public TvShowListDTO getTvShowList (String listCategory, int page) {
+    public TvShowListDTO getTvShowList (String listCategory, int page) throws JsonMappingException, JsonProcessingException {
         //log.info("GET TV SHOW LIST Category = {}, Page = {}", listCategory, page);
 
 
         RestTemplate restTemplate = new RestTemplate();
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
         String baseUrl =  BASE_URL + "/tv";
 
@@ -174,7 +172,6 @@ public class TvShowApiUtil {
                         .path("/{listCategory}")
                         .queryParam("language", "ko-KR")
                         .queryParam("page", page)
-                        .queryParam("api_key",API_KEY)
                         .buildAndExpand(String.valueOf(listCategory))
                         .toUriString();
                 //log.info("targetURL = {}", targetUrl);
@@ -185,16 +182,31 @@ public class TvShowApiUtil {
                 break;
         }
 
-        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl, TvShowListDTO.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+//        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl, TvShowListDTO.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        TvShowListDTO tvShowListDTO = objectMapper.readValue(response.getBody(), TvShowListDTO.class);
 
         return tvShowListDTO;
     }
 
-    public TvShowListDTO getTrendTvShowList (String timeWindow, int page) {
+    public TvShowListDTO getTrendTvShowList (String timeWindow, int page) throws JsonMappingException, JsonProcessingException {
         //log.info("Get Trend Tv Show List - TimeWindow = {} , Page = {}", timeWindow, page);
 
 
         RestTemplate restTemplate = new RestTemplate();
+                
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
         String baseUrl = "https://api.themoviedb.org/3/trending/tv";
 
@@ -207,7 +219,6 @@ public class TvShowApiUtil {
                     .path("/{timeWindow}")
                     .queryParam("language", "ko-KR")
                     .queryParam("page", page)
-                    .queryParam("api_key", API_KEY)
                     .buildAndExpand(String.valueOf(timeWindow))
                     .toUriString();
 //            log.info("targetURL = {}", targetUrl);
@@ -217,8 +228,19 @@ public class TvShowApiUtil {
                 break;
         }
 
-        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl, TvShowListDTO.class);
+//        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl, TvShowListDTO.class);
 
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        TvShowListDTO tvShowListDTO = objectMapper.readValue(response.getBody(), TvShowListDTO.class);
+        
+        
         return tvShowListDTO;
     }
 
@@ -235,10 +257,16 @@ public class TvShowApiUtil {
     api_key =
      */
 
-    public TvShowListDTO getOttTvShowList (String platform, int page){
+    public TvShowListDTO getOttTvShowList (String platform, int page) throws JsonMappingException, JsonProcessingException{
 //        log.info("Get Ott Tv Show List platform = {}, page = {}" , platform, page);
 
         RestTemplate restTemplate = new RestTemplate();
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
         String baseUrl = "https://api.themoviedb.org/3/discover/tv";
 
@@ -252,7 +280,6 @@ public class TvShowApiUtil {
                         .queryParam("sort_by", "vote_count.desc")
                         .queryParam("watch_region", "KR")
                         .queryParam("with_watch_providers", 8)
-                        .queryParam("api_key", API_KEY)
                         .toUriString();
 //                log.info("targetURL = {}", targetUrl);
                 break;
@@ -263,7 +290,6 @@ public class TvShowApiUtil {
                         .queryParam("sort_by", "vote_count.desc")
                         .queryParam("watch_region", "KR")
                         .queryParam("with_watch_providers", 337)
-                        .queryParam("api_key", API_KEY)
                         .toUriString();
 //                log.info("targetURL = {}", targetUrl);
                 break;
@@ -274,7 +300,6 @@ public class TvShowApiUtil {
                         .queryParam("sort_by", "vote_count.desc")
                         .queryParam("watch_region", "KR")
                         .queryParam("with_watch_providers", 350)
-                        .queryParam("api_key", API_KEY)
                         .toUriString();
 //                log.info("targetURL = {}", targetUrl);
                 break;
@@ -285,7 +310,6 @@ public class TvShowApiUtil {
                         .queryParam("sort_by", "vote_count.desc")
                         .queryParam("watch_region", "KR")
                         .queryParam("with_watch_providers", 119)
-                        .queryParam("api_key", API_KEY)
                         .toUriString();
 //                log.info("targetURL = {}", targetUrl);
                 break;
@@ -296,7 +320,6 @@ public class TvShowApiUtil {
                         .queryParam("sort_by", "vote_count.desc")
                         .queryParam("watch_region", "KR")
                         .queryParam("with_watch_providers", 97)
-                        .queryParam("api_key", API_KEY)
                         .toUriString();
 //                log.info("targetURL = {}", targetUrl);
                 break;
@@ -307,7 +330,6 @@ public class TvShowApiUtil {
                         .queryParam("sort_by", "vote_count.desc")
                         .queryParam("watch_region", "KR")
                         .queryParam("with_watch_providers", 356)
-                        .queryParam("api_key", API_KEY)
                         .toUriString();
 //                log.info("targetURL = {}", targetUrl);
                 break;
@@ -316,15 +338,30 @@ public class TvShowApiUtil {
                 break;
         }
 
-        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl, TvShowListDTO.class);
-
+//        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl, TvShowListDTO.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        TvShowListDTO tvShowListDTO = objectMapper.readValue(response.getBody(), TvShowListDTO.class);        
+        
         return tvShowListDTO;
     }
 
     // 장르 가져오기
-    public TvShowGenreListDTO getTvShowGenreList (String language) {
+    public TvShowGenreListDTO getTvShowGenreList (String language) throws JsonMappingException, JsonProcessingException {
 //        log.info("get TvShowGenreList - Language = {}", language);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+    	
         RestTemplate restTemplate = new RestTemplate();
 
         String baseUrl = BASE_URL + "/genre/tv/list";
@@ -333,22 +370,39 @@ public class TvShowApiUtil {
 
         targetUrl = UriComponentsBuilder.fromUriString(baseUrl)
                 .queryParam("language", language)
-                .queryParam("api_key", API_KEY)
+                .queryParam("api_key", TOKEN)
                 .toUriString();
 //        log.info("TARGET URL = {}", targetUrl);
 
-        TvShowGenreListDTO tvShowGenreListDTO = restTemplate.getForObject(targetUrl, TvShowGenreListDTO.class);
-
+//        TvShowGenreListDTO tvShowGenreListDTO = restTemplate.getForObject(targetUrl, TvShowGenreListDTO.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        
+        TvShowGenreListDTO tvShowGenreListDTO = objectMapper.readValue(response.getBody(), TvShowGenreListDTO.class); 
+        
         return tvShowGenreListDTO;
     }
 
 
     // 장르별 TvShowList 출력
-    public TvShowListDTO getGenreTvShowList (String genre, int page) {
+    public TvShowListDTO getGenreTvShowList (String genre, int page) throws JsonMappingException, JsonProcessingException {
 //        log.info("get GenreTvShowList - Genre = {}, page = {}", genre, page);
 
         RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+    	
+        
         String baseUrl = "https://api.themoviedb.org/3/discover/tv";
 
         String targetUrl = "";
@@ -359,20 +413,36 @@ public class TvShowApiUtil {
                 .queryParam("sort_by", "vote_count.desc")
                 .queryParam("watch_region", "KR")
                 .queryParam("with_genres", genre)
-                .queryParam("api_key", API_KEY)
                 .toUriString();
 //        log.info("TARGET URL = {}", targetUrl);
 
-        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl,TvShowListDTO.class);
+//        TvShowListDTO tvShowListDTO = restTemplate.getForObject(targetUrl,TvShowListDTO.class);
+        
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        TvShowListDTO tvShowListDTO = objectMapper.readValue(response.getBody(), TvShowListDTO.class);
+        
         return  tvShowListDTO;
     }
 
 
-    public TvShowDTO getTvShowDetails (int tvshow_id) {
+    public TvShowDTO getTvShowDetails (int tvshow_id) throws JsonMappingException, JsonProcessingException {
 //        log.info("get TvShow Season Detail - TVSHOW ID = {}", tvshow_id);
 
         RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);    	
+        
         String baseUrl = "https://api.themoviedb.org/3/tv";
 
         String targetUrl = "";
@@ -380,13 +450,21 @@ public class TvShowApiUtil {
         targetUrl = UriComponentsBuilder.fromUriString(baseUrl)
                 .path("/{tvshow_id}")
                 .queryParam("language", "ko")
-                .queryParam("api_key", API_KEY)
                 .buildAndExpand(String.valueOf(tvshow_id))
                 .toUriString();
 //        log.info("TARGET URL = {}",targetUrl);
 
-        TvShowDTO tvShowDTO = restTemplate.getForObject(targetUrl, TvShowDTO.class);
-
+//        TvShowDTO tvShowDTO = restTemplate.getForObject(targetUrl, TvShowDTO.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        TvShowDTO tvShowDTO = objectMapper.readValue(response.getBody(), TvShowDTO.class);
+        
         return  tvShowDTO;
     }
 
@@ -398,21 +476,33 @@ public class TvShowApiUtil {
 
         RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
         String json = UriComponentsBuilder.fromUriString(baseUrl)
                 .path("/{id}/videos")
-                .queryParam("api_key",API_KEY)
                 .buildAndExpand(String.valueOf(id))
                 .toUriString();
 
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(json, String.class);
-        String jsonString = responseEntity.getBody();
+//        ResponseEntity<String> responseEntity = restTemplate.getForEntity(json, String.class);
+//        String jsonString = responseEntity.getBody();
+        ResponseEntity<String> response = restTemplate.exchange(
+                json, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
+                
 
         ObjectMapper mapper = new ObjectMapper();
 
         TvShowVideoListDTO tvShowVideoDTOList = null;
 
         try {
-            tvShowVideoDTOList = mapper.readValue(jsonString, TvShowVideoListDTO.class);
+            tvShowVideoDTOList = mapper.readValue(response.getBody(), TvShowVideoListDTO.class);
         } catch (JsonProcessingException e){
             e.printStackTrace();
         }
@@ -428,26 +518,35 @@ public class TvShowApiUtil {
 
         RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
         String baseUrl = BASE_URL + "/tv";
 
         String targetUrl = "";
 
         targetUrl = UriComponentsBuilder.fromUriString(baseUrl)
                 .path("/{tvshow_id}/watch/providers")
-                .queryParam("api_key", API_KEY)
                 .buildAndExpand(String.valueOf(tvshow_id))
                 .toUriString();
 //        log.info("TARGET URL = {}", targetUrl);
 
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(targetUrl, String.class);
-        String jsonString = responseEntity.getBody();
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );
 
         ObjectMapper objectMapper = new ObjectMapper();
 
         TvShowWatchProviderListDTO tvShowWatchProviderListDTO = null;
 
         try {
-            tvShowWatchProviderListDTO = objectMapper.readValue(jsonString, TvShowWatchProviderListDTO.class);
+            tvShowWatchProviderListDTO = objectMapper.readValue(response.getBody(), TvShowWatchProviderListDTO.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -460,6 +559,12 @@ public class TvShowApiUtil {
 
         RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
         String baseUrl = "https://api.themoviedb.org/3/tv";
 
         String targetUrl = "";
@@ -469,12 +574,28 @@ public class TvShowApiUtil {
                 .path("/season")
                 .path("/{season_number}")
                 .queryParam("language", "ko-KR")
-                .queryParam("api_key", API_KEY)
                 .buildAndExpand(String.valueOf(tvshow_id), String.valueOf(season_number))
                 .toUriString();
 //        log.info("TARGET URL = {}",targetUrl);
 
-        TvShowSeasonDTO seasonDTO = restTemplate.getForObject(targetUrl, TvShowSeasonDTO.class);
+//        TvShowSeasonDTO seasonDTO = restTemplate.getForObject(targetUrl, TvShowSeasonDTO.class);
+        
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );        
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        
+        TvShowSeasonDTO seasonDTO = null;
+        try {        
+        	objectMapper.readValue(response.getBody(), TvShowSeasonDTO.class);
+        } catch (JsonProcessingException e) {
+        	
+        }
+        
 
         return  seasonDTO;
     }
@@ -483,6 +604,12 @@ public class TvShowApiUtil {
 //        log.info("get TvShow Episode Detail - TVSHOW ID = {} , SEASON_NUMBER = {}, EPISODE_NUMBER = {}", tvshow_id, season_number, episode_number);
 
         RestTemplate restTemplate = new RestTemplate();
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + TOKEN);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
         String baseUrl = "https://api.themoviedb.org/3/tv";
 
@@ -495,12 +622,25 @@ public class TvShowApiUtil {
                 .path("/episode")
                 .path("/{episode_number}")
                 .queryParam("language", "ko-KR")
-                .queryParam("api_key", API_KEY)
                 .buildAndExpand(String.valueOf(tvshow_id), String.valueOf(season_number), String.valueOf(episode_number))
                 .toUriString();
 //        log.info("TARGET URL = {}", targetUrl);
 
-        TvShowEpisodeDTO episodeDTO = restTemplate.getForObject(targetUrl, TvShowEpisodeDTO.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                targetUrl, 
+                HttpMethod.GET, 
+                entity, 
+                String.class
+        );        
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        
+        TvShowEpisodeDTO episodeDTO = null;
+        try {        
+        	objectMapper.readValue(response.getBody(), TvShowEpisodeDTO.class);
+        } catch (JsonProcessingException e) {
+        	
+        }
 
         return  episodeDTO;
     }
