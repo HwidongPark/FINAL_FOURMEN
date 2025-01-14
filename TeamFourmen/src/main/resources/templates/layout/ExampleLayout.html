@@ -252,7 +252,7 @@
                     <div class="navbar-detailed-menu-items-mypage" sec:authorize="hasRole('USER')">
                             <div class="navbar-detailed-menu-list-mypage">
 
-                                <div class="navbar-each-menu-item-mypage"><a th:href="@{/mypage/details/{id}/profile(id = ${member.memberId})}" th:text="${member}">My Page</a></div>
+                                <div class="navbar-each-menu-item-mypage"><a th:href="@{/mypage/details/{id}/profile(id = ${member.memberId})}">My Page</a></div>
                                 <div class="navbar-each-menu-item-mypage"><a th:href="@{/mypage/details/{id}/followers(id = ${member.memberId})}">My follower</a></div>
                                 <div class="navbar-each-menu-item-mypage"><a th:href="@{/mypage/details/{id}/followings(id = ${member.memberId})}">My following</a></div>
 
