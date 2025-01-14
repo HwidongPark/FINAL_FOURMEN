@@ -379,7 +379,7 @@ public class BoardService {
 		
 		Post thePost = thePostOptional.orElse(null);
 		
-		Long views = thePost.getViews();
+		Long views = (thePost.getViews() != null) ? thePost.getViews() : 0L;
 		thePost.setViews(views + 1);
 	}
 	
