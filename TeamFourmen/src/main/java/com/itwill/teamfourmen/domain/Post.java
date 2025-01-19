@@ -63,10 +63,10 @@ public class Post {
 	
 	private LocalDateTime modifiedTime;
 	
-	
+	@ColumnDefault("0")
 	private Long views;
 	
-	
+	@ColumnDefault("0")
 	private Long likes;
 	
 	@OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
